@@ -11,7 +11,7 @@ To do this, we parse the connection string and run goose as many times as needed
 ## Example
 
 ```
-clickhouse-goose tcp://clickhouse1:9000?database=marketdata&read_timeout=5&write_timeout=5&alt_hosts=clickhouse2:9000,clickhouse3:9000
+clickhouse-goose --db_addr "tcp://clickhouse1:9000?database=marketdata&read_timeout=5&write_timeout=5&alt_hosts=clickhouse2:9000,clickhouse3:9000"
 ```
 
 The above will run goose against clickhouse1, clickhouse2, and clickhouse3 using ./db/dbconf.yml
