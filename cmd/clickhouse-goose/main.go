@@ -1,24 +1,24 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"github.com/jessevdk/go-flags"
 	"log"
 	"net"
-	"strings"
-	"errors"
 	"os"
-	"fmt"
 	"os/exec"
+	"strings"
 )
 
 type CommandLineOptions struct {
-	DBAddr     string `long:"db_addr" description:"clickhouse db connection address" env:"DB_ADDR" default:"tcp://localhost:9000?database=marketdata&read_timeout=5&write_timeout=5&alt_hosts=localhost:9001,localhost:9002"`
-	GooseEnv 	string `long:"goose_env" description:"goose environment to execute against" env:"GOOSE_ENV" default:"development"`
-	Verbose bool `long:"verbose" description:"verbose output" env:"VERBOSE"`
+	DBAddr         string `long:"db_addr" description:"clickhouse db connection address" env:"DB_ADDR" default:"tcp://localhost:9000?database=marketdata&read_timeout=5&write_timeout=5&alt_hosts=localhost:9001,localhost:9002"`
+	GooseEnv       string `long:"goose_env" description:"goose environment to execute against" env:"GOOSE_ENV" default:"development"`
+	VerboseLogging bool   `long:"verbose_logging" description:"verbose output" env:"VERBOSE_LOGGING"`
 }
 
 const name = "clickhouse-goose"
-const version = "0.0.1"
+const version = "0.0.2"
 
 func main() {
 	var opts CommandLineOptions
@@ -32,19 +32,19 @@ func main() {
 		log.Fatal(err)
 	}
 	ips := TranslateHostArrayToIPs(hostNamesOrIps)
-	if opts.Verbose {
+	if opts.VerboseLogging {
 		log.Printf("IPS: %v", ips)
 		log.Printf("Conn String: %s", connString)
 	}
 
 	for i := 0; i < len(ips); i++ {
-		RunGoose(ips[i], connString, opts.GooseEnv, opts.Verbose)
+		RunGoose(ips[i], connString, opts.GooseEnv, opts.VerboseLogging)
 	}
 
 	// Put DB_ADDR back
 	os.Setenv("DB_ADDR", opts.DBAddr)
 	dbAddr := os.Getenv("DB_ADDR")
-	if opts.Verbose {
+	if opts.VerboseLogging {
 		log.Printf("DB_ADDR: %s", dbAddr)
 	}
 }
@@ -110,7 +110,6 @@ func ExtractHostsFromConnectionString(dbAddr string) (hosts []string, connString
 	return hostnamesOrIps, connString, nil
 }
 
-
 func TranslateHostArrayToIPs(addrArray []string) []string {
 	for i := 0; i < len(addrArray); i++ {
 		addrArray[i] = TranslateHostToIP(addrArray[i])
@@ -145,9 +144,10 @@ func RunGoose(ipAndPort string, connString string, gooseEnv string, verbose bool
 		log.Printf("DB_ADDR: %s", dbAddr)
 	}
 	// run goose
-	cmd := exec.Command("goose", "-env", gooseEnv, "up" )
+	cmd := exec.Command("goose", "-env", gooseEnv, "up")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("Goose:\n%s\n", string(out))
 		log.Fatalf("failed running `goose up` failed with: %s\n", err)
 	}
 	if verbose {

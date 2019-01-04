@@ -17,10 +17,10 @@ func stringInSlice(a string, list []string) bool {
 
 func Test_GatherHostnamesOrIps(t *testing.T) {
 	type testCase struct {
-		DBAddr string
-		ConnString string
+		DBAddr         string
+		ConnString     string
 		HostnamesOrIps []string
-		Valid bool
+		Valid          bool
 	}
 
 	var testCases = []testCase{
@@ -45,19 +45,19 @@ func Test_GatherHostnamesOrIps(t *testing.T) {
 		{
 			"tcp://10.1.23.45:9000?write_timeout=5&database=testing&alt_hosts=clickhouse2:9000,10.0.0.1:9000,10.0.0.2:9200,10.0.0.3:4555,10.0.0.4:5656",
 			"tcp://%s?write_timeout=5&database=testing",
-			[]string{"10.1.23.45:9000", "clickhouse2:9000", "10.0.0.1:9000","10.0.0.2:9200", "10.0.0.3:4555", "10.0.0.4:5656"},
+			[]string{"10.1.23.45:9000", "clickhouse2:9000", "10.0.0.1:9000", "10.0.0.2:9200", "10.0.0.3:4555", "10.0.0.4:5656"},
 			true,
 		},
 		{
 			"tcp://davekoston.com:9000?database=marketdata&read_timeout=5&write_timeout=5&alt_hosts=localhost:9000",
 			"tcp://%s?database=marketdata&read_timeout=5&write_timeout=5",
-			[]string{"davekoston.com:9000","localhost:9000"},
+			[]string{"davekoston.com:9000", "localhost:9000"},
 			true,
 		},
 		{
 			"tcp://fred?database=marketdata&read_timeout=5&write_timeout=5&alt_hosts=clickhouse2:9000,10.0.0.1:9000,10.0.0.2:9200,10.0.0.3:4555,10.0.0.4:5656",
 			"tcp://%s?database=marketdata&read_timeout=5&write_timeout=5",
-			[]string{"10.1.23.45", "clickhouse2", "10.0.0.1","10.0.0.2", "10.0.0.3", "10.0.0.4"},
+			[]string{"10.1.23.45", "clickhouse2", "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4"},
 			false,
 		},
 		{
@@ -74,7 +74,7 @@ func Test_GatherHostnamesOrIps(t *testing.T) {
 		},
 	}
 
-	for i :=0; i < len(testCases); i++ {
+	for i := 0; i < len(testCases); i++ {
 		hostnamesOrIps, connString, err := ExtractHostsFromConnectionString(testCases[i].DBAddr)
 
 		if !testCases[i].Valid {
